@@ -1,0 +1,2 @@
+nginx_port: 9000
+nginx_root_path: /var/www/mysite
