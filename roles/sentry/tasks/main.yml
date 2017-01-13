@@ -1,0 +1,65 @@
+- name: Adicionar o pacote do redis
+  apt_repository: repo='ppa:chris-lea/redis-server' state=present
+
+- name: Atualizar repositório
+  apt: updade_cache=yes
+
+- name: Instalar pacotes necessários
+  apt: name={{ item }} state=installed
+  with_items:
+    - redis-server
+    - redis-tools
+    - python-setuptools
+    - python-pip
+    - python-dev
+    - libxslt1-dev
+    - libxml2-dev
+    - libz-dev
+    - libffi-dev
+    - libssl-dev
+    - libpq-dev
+    - libyaml-dev
+    - postgresql
+    - supervisor
+    - python-dev
+    - libjpeg8-dev
+    - python-virtualenv
+
+- name: Criar link da lib
+  file: src=/usr/lib/x86_64-linux-gnu/libjpeg.so dest=/usr/lib
+
+- name: Adiciona um usuário ao sistema
+    user: name=sentry password=madhava
+
+#POSTGRESQL
+- name: Ensure the PostgreSQL service is running
+  service: name=postgresql state=started enabled=yes
+
+- name: Ensure database is created
+  become_user: postgres
+  become: yes
+  postgresql_db: name=sentrydb
+                 encoding='UTF-8'
+                 lc_collate='en_US.UTF-8'
+                 lc_ctype='en_US.UTF-8'
+                 template='template1'
+                 state=present
+
+- name: Ensure user has access to the database
+  become_user: postgres
+  become: yes
+  postgresql_user: db=sentrydb
+                   name=sentry
+                   password=madhava
+                   priv=ALL
+                   state=present
+                   encrypted=no
+
+- name: Ensure user does not have unnecessary privileges
+  become_user: postgres
+  become: yes
+  postgresql_user: name=sentry
+                   role_attr_flags=NOSUPERUSER,NOCREATEDB
+                   state=present
+
+#TEM QUE INSTALAR O PILLOW VIA PIP
