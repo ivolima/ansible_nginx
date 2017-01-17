@@ -1,5 +1,5 @@
 ---
-  - hosts: web2
+  - hosts: web
     remote_user: root
     gather_facts: no
 
@@ -13,6 +13,9 @@
 
       - name: Include installation steps nginx
         include: 'roles/nginx/tasks/install_nginx.yml'
+
+      - name: Include installation steps sentry
+        include: 'roles/sentry/tasks/main.yml'
 
     handlers:
       - include: roles/nginx/handlers/main.yml

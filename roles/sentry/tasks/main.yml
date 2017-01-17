@@ -2,7 +2,8 @@
   apt_repository: repo='ppa:chris-lea/redis-server' state=present
 
 - name: Atualizar repositório
-  apt: updade_cache=yes
+  apt:
+    update_cache: yes
 
 - name: Instalar pacotes necessários
   apt: name={{ item }} state=installed
@@ -29,7 +30,7 @@
   file: src=/usr/lib/x86_64-linux-gnu/libjpeg.so dest=/usr/lib
 
 - name: Adiciona um usuário ao sistema
-    user: name=sentry password=madhava
+  user: name=sentry password=madhava
 
 #POSTGRESQL
 - name: Ensure the PostgreSQL service is running
@@ -62,4 +63,21 @@
                    role_attr_flags=NOSUPERUSER,NOCREATEDB
                    state=present
 
-#TEM QUE INSTALAR O PILLOW VIA PIP
+- name: Intall virtualenv
+  pip: name=virtualenv
+
+- name: Criar virtualenv
+  pip: name=pillow virtualenv=~/sentry_app/
+  become_user: sentry
+  become: yes
+
+- name: Install sentry
+  pip: name=sentry virtualenv=~/sentry_app/
+  become_user: sentry
+  become: yes
+
+- name: virtualenv activate
+  remote_user: sentry
+  command: source ~/sentry_app/bin/activate
+  become_user: sentry
+  become: yes
