@@ -25,14 +25,16 @@
     - python-dev
     - libjpeg8-dev
     - python-virtualenv
+    - libpython2.7
+    - libpython2.7-dev
 
 - name: Criar link da lib
   file: src=/usr/lib/x86_64-linux-gnu/libjpeg.so dest=/usr/lib
 
-- name: Adiciona um usuário ao sistema
-  user: name=sentry password=madhava
-
 #POSTGRESQL
+- name: Install psycopg2
+  pip: name=psycopg2
+
 - name: Ensure the PostgreSQL service is running
   service: name=postgresql state=started enabled=yes
 
@@ -68,16 +70,12 @@
 
 - name: Criar virtualenv
   pip: name=pillow virtualenv=~/sentry_app/
-  become_user: sentry
-  become: yes
 
 - name: Install sentry
   pip: name=sentry virtualenv=~/sentry_app/
-  become_user: sentry
-  become: yes
+
+- name: Copy script for install sentry
+  copy: src=roles/sentry/templates/activate.sh dest=/root/ mode=7777
 
 - name: virtualenv activate
-  remote_user: sentry
-  command: source ~/sentry_app/bin/activate
-  become_user: sentry
-  become: yes
+  script: ~/activate.sh
