@@ -1,0 +1,46 @@
+- name: Installing the nginx packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  with_items:
+      - python-selinux
+      - nginx
+
+- name: Creating the directories for site specific configurations
+  file:
+      path=/etc/nginx/{{ item }} state=directory owner=root group=root mode=0755
+  with_items:
+      - sites-available
+      - sites-enabled
+
+- name: Creating the directory for my site
+  file:
+      path=/var/www/mysite state=directory mode=0755
+
+- name: Copying index.html to my site directory
+  copy:
+      src: "{{ role_path }}/files/index.html"
+      dest: "{{ nginx_root_path }}/index.html"
+      mode: 0644
+
+- name: Copying my site configuration
+  template:
+      src=nginx.conf.j2
+      dest=/etc/nginx/sites-available/mysite
+  with_items:
+      - nginx_port
+      - nginx_root_path
+
+- name: Creating link to enable my site configutation
+  file: path=/etc/nginx/sites-enabled/mysite state=link src=/etc/nginx/sites-available/mysite
+  notify:
+      - reload nginx
+
+- name: Starting nginx service
+  service:
+      name=nginx
+      state=started
+      enabled=yes
+
